@@ -4,8 +4,11 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+//import com.google.android.gms.location.Locationrequest;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -45,6 +49,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+//        openGPSSettings();
+
+
+
+
+
+
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
             Toast.makeText(MainActivity.this, "Internet not granted", Toast.LENGTH_LONG).show();
             return;
@@ -67,12 +80,29 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     xx);
         }
+
+
+        //Criteria is being used okayishly(Without errors) without much effect on the accuracy
+//        Criteria criteria = new Criteria();
+//        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+//        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
+//        criteria.setPowerRequirement(Criteria.POWER_HIGH);
+//        locationManager.requestLocationUpdates(100, 0, criteria, this, null);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
 
 
 
+    }
 
+    public void Loc(View view){
+        Intent intent = new Intent(MainActivity.this, Loc.class);
+        startActivity(intent);
+    }
 
+    public void Locc(View view){
+        Intent intent = new Intent(MainActivity.this, Loc.class);
+        startActivity(intent);
     }
 
 
