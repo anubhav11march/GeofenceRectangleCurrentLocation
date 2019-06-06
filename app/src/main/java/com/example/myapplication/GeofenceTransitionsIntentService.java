@@ -26,9 +26,12 @@ import static android.content.ContentValues.TAG;
 public class GeofenceTransitionsIntentService extends IntentService {
 
     private static final String Tag = "Geofence Transitions";
-    public GeofenceTransitionsIntentService(String name) {
-        super(name);
+
+    public GeofenceTransitionsIntentService() {
+        super("Intent Service");
+
     }
+
 
     @Nullable
 
@@ -40,7 +43,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             return;
         }
 
-        Toast.makeText(this, "shown", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "shown222", Toast.LENGTH_LONG).show();
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
         if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
             showNotification("Entered", "Entered the location");
