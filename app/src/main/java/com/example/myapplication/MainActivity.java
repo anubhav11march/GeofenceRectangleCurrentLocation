@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected Context context;
     private final int REQUEST_LOCATION_PERMISSION = 1, xx=0;
     private GoogleMap mMap;
-    private int REQUEST_CHECK_SETTINGS = 1;
-    public static int ff=0;
+    private int REQUEST_CHECK_SETTINGS = 1, f=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,37 +106,91 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(createlocationRequest());
         SettingsClient settingsClient = LocationServices.getSettingsClient(this);
-        final Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-//                    while (ff!=1){
-                        try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
 
+            task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+                @Override
+                public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+
+                }
+            });
+
+
+            {
+                task.addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if (e instanceof ResolvableApiException) {
+                            // Location settings are not satisfied, but this can be fixed
+                            // by showing the user a dialog.
+                            try {
+                                // Show the dialog by calling startResolutionForResult(),
+                                // and check the result in onActivityResult().
+                                ResolvableApiException resolvable = (ResolvableApiException) e;
+                                resolvable.startResolutionForResult(MainActivity.this,
+                                        REQUEST_CHECK_SETTINGS);
+
+                            } catch (IntentSender.SendIntentException sendEx) {
+
+                            }
+                        }
+                    }
+                });
+
+            }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                    .addLocationRequest(createlocationRequest());
+            SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+            Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+            task.addOnFailureListener(this, new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (e instanceof ResolvableApiException) {
+                        // Location settings are not satisfied, but this can be fixed
+                        // by showing the user a dialog.
+                        try {
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
                             ResolvableApiException resolvable = (ResolvableApiException) e;
                             resolvable.startResolutionForResult(MainActivity.this,
                                     REQUEST_CHECK_SETTINGS);
-//                            task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
-//                                @Override
-//                                public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-//                                    ff=1;
-//                                }
-//                            });
 
-                    } catch (IntentSender.SendIntentException sendEx) {
+                        } catch (IntentSender.SendIntentException sendEx) {
 
+                        }
                     }
                 }
-//                }
-            }
-        });
+            });
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     public void Loc(View view){
