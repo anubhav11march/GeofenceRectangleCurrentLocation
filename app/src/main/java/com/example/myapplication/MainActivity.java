@@ -1,14 +1,21 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +23,8 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -50,19 +59,22 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     public LocationManager locationManager;
-    public TextView latlon, gf;
+    public TextView latlon, gf, vv;
     public int lng, lti;
     protected Context context;
     private final int REQUEST_LOCATION_PERMISSION = 1, xx = 0;
     private GoogleMap mMap;
     private int REQUEST_CHECK_SETTINGS = 1, f = 0;
     private TextView x;
+    private String xxx;
+    private String yyy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         latlon = (TextView) findViewById(R.id.latlon);
+        vv = (TextView) findViewById(R.id.latlon2);
         gf = (TextView) findViewById(R.id.gf);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -143,10 +155,30 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         }
 
+
+        startService(new Intent(MainActivity.this, GPSprovider.class));
+
     }
+    private BroadcastReceiver messageservice = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            xxx = intent.getStringExtra("Longitude");
+            yyy = intent.getStringExtra("Latitude");
+            Log.d("AAA", "Received data " + xxx);
+            vv.setText(xxx + ", " + yyy);
+
+        }
+    };
 
     @Override
     protected void onResume() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageservice, new IntentFilter("Location Updates"));
+
+
+
+        Log.d("AAA", xxx + " Received");
+
+
         super.onResume();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
@@ -272,6 +304,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(
+                messageservice);
+
         super.onPause();
 
 
@@ -364,4 +399,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
     }
+
+
 }
