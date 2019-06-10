@@ -41,11 +41,15 @@ public class GPSprovider extends Service implements LocationListener{
     public LocationManager locationManager;
     private String gf;
     private LatLng sydney;
+    private  long startTime, endTime;
 
 
     @Override
     public void onCreate() {
         Log.d("AAA", "oncreate");
+        startTime = System.currentTimeMillis();
+        endTime = startTime + 60000;
+
         super.onCreate();
     }
 
@@ -88,6 +92,8 @@ public class GPSprovider extends Service implements LocationListener{
                 .build();
         startForeground(1337, notification);
         sendDataToActivity(x, y);
+//        if(System.currentTimeMillis()>endTime)
+//            onDestroy();
 
     }
 
