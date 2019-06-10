@@ -135,27 +135,12 @@ public class Loc extends AppCompatActivity implements android.location.LocationL
 
     }
 
-    public void showNotification(String text, String bigtext) {
-//        NotificationManager nf = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-//        Intent intent = new Intent(this, Loc.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        PendingIntent pendingnotifs = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        Notification notification = new NotificationCompat.Builder(this)
-//                .setSmallIcon(R.mipmap.ic_launcher)
-//                .setContentTitle(text)
-//                .setContentText(text)
-//                .setContentIntent(pendingnotifs)
-//                .setStyle(new NotificationCompat.BigTextStyle().bigText(bigtext))
-//                .setPriority(NotificationCompat.PRIORITY_HIGH)
-//                .setAutoCancel(true)
-//                .build();
-//        nf.notify(0, notification);
-
+    public void showNotification(String text, String bigtext){
         int nid = 0;
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("A notification")
-                .setContentText("You have started the task app")
+                .setContentTitle(text)
+                .setContentText(bigtext)
                 .setAutoCancel(true)
                 .setDefaults(NotificationCompat.DEFAULT_ALL);
 
@@ -164,16 +149,15 @@ public class Loc extends AppCompatActivity implements android.location.LocationL
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String channelId = "YOUR_CHANNEL_ID";
-            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readable title",
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            String channelId =  "YOUR_CHANNEL_ID";
+            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readabale titel",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
 
         notificationManager.notify(nid, builder.build());
-
 
     }
 
@@ -201,11 +185,12 @@ public class Loc extends AppCompatActivity implements android.location.LocationL
     private final int GEOFENCE_REQ_CODE = 0;
 
     private PendingIntent createGeofencePendingIntent() {
-        Log.d(TAG, "PendingIntent");
+
         if (pendingintent != null)
             return pendingintent;
-
+        Log.d(TAG, "PendingIntent");
         Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+
         return PendingIntent.getService(
                 this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
@@ -259,6 +244,7 @@ public class Loc extends AppCompatActivity implements android.location.LocationL
             double cmax = Math.pow(amax, 2) + Math.pow(bmax, 2);
             if(c < cmax){
                 gf.setText("The Delivery person has reached Koramangla.");
+                showNotification("Entered", "Entered the location");
             }
 
 //            if (x > 12.9247 && x < 12.9395 && y > 77.608 && y < 77.6424)

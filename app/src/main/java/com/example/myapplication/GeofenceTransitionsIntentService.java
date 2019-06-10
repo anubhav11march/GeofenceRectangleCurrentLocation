@@ -32,6 +32,45 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d("SERVICe", "oncreate()");
+    }
+
+    @Override
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
+        Log.d("SERVICe", "startcommand");
+
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d("SERVICe", "onbind()");
+        return super.onBind(intent);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d("SERVICe", "onunbind()");
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onStart(@Nullable Intent intent, int startId) {
+        Log.d("SERVICe", "onstart()");
+        super.onStart(intent, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("SERVICe", "oncdestroy()");
+    }
+
 
     @Nullable
 
@@ -42,9 +81,12 @@ public class GeofenceTransitionsIntentService extends IntentService {
             Log.e(TAG,  "Geofencing Error" + geofencingEvent.getErrorCode());
             return;
         }
+        String x = intent.getDataString();
+        Log.d("SERVICe", "intentt()");
 
         Toast.makeText(this, "shown222", Toast.LENGTH_LONG).show();
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
+         Log.d("SERVICe", Integer.toString(geofenceTransition));
         if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
             showNotification("Entered", "Entered the location");
         else if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT)
@@ -71,13 +113,15 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             String channelId =  "YOUR_CHANNEL_ID";
-            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readabale titel",
+            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readable title",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
             builder.setChannelId(channelId);
         }
 
         notificationManager.notify(nid, builder.build());
+
+
 
     }
 }

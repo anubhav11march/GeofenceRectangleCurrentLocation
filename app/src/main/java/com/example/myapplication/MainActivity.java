@@ -9,8 +9,12 @@ import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,6 +35,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 //import com.google.android.gms.location.Locationrequest;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,9 +53,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     public TextView latlon, gf;
     public int lng, lti;
     protected Context context;
-    private final int REQUEST_LOCATION_PERMISSION = 1, xx=0;
+    private final int REQUEST_LOCATION_PERMISSION = 1, xx = 0;
     private GoogleMap mMap;
-    private int REQUEST_CHECK_SETTINGS = 1, f=0;
+    private int REQUEST_CHECK_SETTINGS = 1, f = 0;
+    private TextView x;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +71,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
 //        openGPSSettings();
+        x = (TextView) findViewById(R.id.gff);
 
-
-
-
-
-
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(MainActivity.this, "Internet not granted", Toast.LENGTH_LONG).show();
             return;
         }
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
 
-        //Criteria is being used okayishly(Without errors) without much effect on the accuracy
+//        Criteria is being used okay
 //        Criteria criteria = new Criteria();
 //        criteria.setAccuracy(Criteria.ACCURACY_FINE);
 //        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
@@ -102,53 +105,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 //        criteria.setPowerRequirement(Criteria.POWER_HIGH);
 //        locationManager.requestLocationUpdates(100, 0, criteria, this, null);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
-
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, this);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(createlocationRequest());
         SettingsClient settingsClient = LocationServices.getSettingsClient(this);
         Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
 
-            task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-                @Override
-                public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-
-                }
-            });
-
-
-            {
-                task.addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (e instanceof ResolvableApiException) {
-                            // Location settings are not satisfied, but this can be fixed
-                            // by showing the user a dialog.
-                            try {
-                                // Show the dialog by calling startResolutionForResult(),
-                                // and check the result in onActivityResult().
-                                ResolvableApiException resolvable = (ResolvableApiException) e;
-                                resolvable.startResolutionForResult(MainActivity.this,
-                                        REQUEST_CHECK_SETTINGS);
-
-                            } catch (IntentSender.SendIntentException sendEx) {
-
-                            }
-                        }
-                    }
-                });
+        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
 
             }
+        });
 
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                    .addLocationRequest(createlocationRequest());
-            SettingsClient settingsClient = LocationServices.getSettingsClient(this);
-            Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+        {
             task.addOnFailureListener(this, new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
@@ -169,28 +141,155 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 }
             });
 
+        }
+
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
+
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(createlocationRequest());
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+        task.addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(MainActivity.this,
+                                REQUEST_CHECK_SETTINGS);
+
+                    } catch (IntentSender.SendIntentException sendEx) {
+
+                    }
+                }
+            }
+        });
+        /*for (int i=0; i<5; i++) {
+            Handler handler = new Handler();
+            final int finalI = i;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    x.setText("" + finalI);
+                }
+            });
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }*/
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                Handler handler = new Handler(getMainLooper());
+                for (int i = 0 ;i<5 ;i++) {
+                    final int finalI = i;
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            x.setText(finalI +"");
+                        }
+                    },5000);
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+
+
+
+                /*Looper.prepare();
+                Handler handler = new Handler(getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i<5 ; i++) {
+                            x.setText(i+"");
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                },1000);
+                Looper.loop();*/
+            }
+        }).start();
+
+    }
+
+
 
     @Override
     protected void onRestart() {
         super.onRestart();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+
+//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
+        Log.d("YOOO", "STARTED");
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onStart() {
         super.onStart();
+
+            startService(new Intent(MainActivity.this, NormalService.class).putExtra("Name", "NAMEE"));
+
+//        Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
+        Log.d("YOOO", "STARTED");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        locationManager.removeUpdates(this);
+        locationManager.removeUpdates(this);
+        Log.d("YOOO", "REMOVED");
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
     }
 
     public void Loc(View view){
@@ -221,7 +320,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         else
             gf.setText("The delivery person is yet to reach Koramangla.");
         sydney = new LatLng(x,y);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Current Location"));
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Current Location").snippet("Your current location")
+        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(11));

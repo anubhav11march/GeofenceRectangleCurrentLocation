@@ -13,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service android:name=".GeofenceTransitionsIntentService"/>
+        <service android:name=".NormalService" android:enabled="true"/>
         <!--<uses-permission android:name=""-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
