@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
 
 
-//        startService(new Intent(MainActivity.this, GPSprovider.class));
+        startService(new Intent(MainActivity.this, GPSprovider.class));
 
     }
     public void getData(){
