@@ -4,11 +4,14 @@ import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Criteria;
@@ -19,6 +22,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -71,7 +75,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private String yyy;
     private TextView db;
     private database dbase;
-
+    private BoundService boundService;
+    private boolean isBound = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,8 +165,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
         }
 
+        Intent intentt = new Intent(this, BoundService.class);
+        startService(intentt);
+        bindService(intentt,  boundServiceConnection, BIND_AUTO_CREATE);
 
-        startService(new Intent(MainActivity.this, GPSprovider.class));
+
+
+//        startService(new Intent(MainActivity.this, GPSprovider.class));
 
     }
     public void getData(){
@@ -196,6 +206,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onResume() {
+        //Bounded Service
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d("AAAA", String.valueOf(boundService.randomGenerator()));
+            }
+        };
+
+        Handler handler = new Handler();
+        handler.postDelayed(runnable, 2000);
+
+        //Normal service
         LocalBroadcastManager.getInstance(this).registerReceiver(messageservice, new IntentFilter("Location Updates"));
 
 
@@ -315,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected void onStart() {
         super.onStart();
 
-            startService(new Intent(MainActivity.this, NormalService.class).putExtra("Name", "NAMEE"));
+//            startService(new Intent(MainActivity.this, NormalService.class).putExtra("Name", "NAMEE"));
 
 //        Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -339,12 +361,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     protected void onStop() {
         super.onStop();
+        if(isBound){
+            unbindService(boundServiceConnection);
+            isBound = false;
+
+
+        }
 
         locationManager.removeUpdates(this);
         locationManager.removeUpdates(this);
         Log.d("YOOO", "REMOVED");
 
     }
+
+    private ServiceConnection boundServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            BoundService.MyBinder binderBridge = (BoundService.MyBinder) iBinder;
+            boundService = binderBridge.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            isBound = false;
+            boundService = null;
+        }
+    };
 
     @Override
     protected void onDestroy() {

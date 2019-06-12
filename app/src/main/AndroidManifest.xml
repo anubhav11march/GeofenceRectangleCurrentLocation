@@ -20,6 +20,8 @@
         <service
             android:name=".NormalService"
             android:enabled="true" />
+        <service android:name=".BoundService"
+            android:enabled="true"/>
         <service
             android:name=".GPSprovider"
             android:enabled="true" /> <!-- <uses-permission android:name="" -->
