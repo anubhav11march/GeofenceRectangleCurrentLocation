@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Criteria;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private TextView x;
     private String xxx;
     private String yyy;
+    private TextView db;
+    private database dbase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         setContentView(R.layout.activity_main);
         latlon = (TextView) findViewById(R.id.latlon);
         vv = (TextView) findViewById(R.id.latlon2);
+        db = (TextView) findViewById(R.id.ll);
+        dbase = new database(this);
         gf = (TextView) findViewById(R.id.gf);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -159,6 +164,24 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         startService(new Intent(MainActivity.this, GPSprovider.class));
 
     }
+    public void getData(){
+        Cursor res = dbase.getData();
+        if(res.getCount() == 0)
+            Toast.makeText(this, "No data found.", Toast.LENGTH_SHORT).show();
+        StringBuffer sb = new StringBuffer();
+//        int i=0;
+//        while (res.moveToNext()){
+//            i++;
+//        }
+//        res.moveToPrevious();
+        res.moveToLast();
+        sb.append(res.getString(0) + "\n");
+        sb.append(res.getString(2) + "\n");
+        sb.append(res.getString(1) + "\n");
+        db.setText(sb.toString());
+        res.close();
+    }
+
     private BroadcastReceiver messageservice = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -167,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             Log.d("AAA", "Received data " + xxx);
             vv.setText(xxx + ", " + yyy);
 
+            getData();
         }
     };
 
@@ -315,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     @Override
     protected void onStop() {
         super.onStop();
+
         locationManager.removeUpdates(this);
         locationManager.removeUpdates(this);
         Log.d("YOOO", "REMOVED");
@@ -333,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     public void Locc(View view){
-        Intent intent = new Intent(MainActivity.this, Loc.class);
+        Intent intent = new Intent(MainActivity.this, SQLite.class);
         startActivity(intent);
     }
 

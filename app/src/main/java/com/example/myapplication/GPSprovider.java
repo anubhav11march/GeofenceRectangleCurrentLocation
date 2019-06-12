@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,12 +27,17 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class GPSprovider extends Service implements LocationListener{
@@ -43,13 +49,15 @@ public class GPSprovider extends Service implements LocationListener{
     private LatLng sydney;
     private  long startTime, endTime;
 
+    private database dbase;
+
 
     @Override
     public void onCreate() {
         Log.d("AAA", "oncreate");
         startTime = System.currentTimeMillis();
         endTime = startTime + 60000;
-
+        dbase = new database(this);
         super.onCreate();
     }
 
@@ -58,17 +66,13 @@ public class GPSprovider extends Service implements LocationListener{
         Toast.makeText(this, "onlocationchanged", Toast.LENGTH_SHORT).show();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             return super.onStartCommand(intent, flags, startId);
         }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this);
-        return super.onStartCommand(intent, flags, startId);
+//        return super.onStartCommand(intent, flags, startId);
+
+        return Service.START_STICKY;
     }
 
 
@@ -92,6 +96,7 @@ public class GPSprovider extends Service implements LocationListener{
                 .build();
         startForeground(1337, notification);
         sendDataToActivity(x, y);
+        AddData(x, y);
 //        if(System.currentTimeMillis()>endTime)
 //            onDestroy();
 
@@ -105,6 +110,20 @@ public class GPSprovider extends Service implements LocationListener{
         Log.d("AAA", "Data Sent " + x);
         showNotification(x+"", y+"");
     }
+
+    public void AddData(double x, double y){
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy, HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
+        String timee = sdf.format(date);
+        boolean isInserted = dbase.insertData(timee, x + "", y+"");
+        if(isInserted == true)
+            Log.d("AAA", "Data Added to SQLite");
+        else
+            Log.d("AAA", "Data Couldn't be Added to SQLite");
+    }
+
+
+
 
 
     @Override
