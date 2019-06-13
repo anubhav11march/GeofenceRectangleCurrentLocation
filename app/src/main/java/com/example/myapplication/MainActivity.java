@@ -77,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private database dbase;
     private BoundService boundService;
     private boolean isBound = false;
+    private GPSprovider gpss = new GPSprovider();
+    private SuccessListener successListener = new SuccessListener();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
 
 
 //        openGPSSettings();
@@ -206,16 +209,38 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onResume() {
-        //Bounded Service
-        Runnable runnable = new Runnable() {
+        successListener.setListenerr(new SuccessListener.onSuccessListenerr() {
             @Override
-            public void run() {
-                Log.d("AAAA", String.valueOf(boundService.randomGenerator()));
+            public void onSuccess() {
+                Log.d("AAAAA","Success");
+                Toast.makeText(getApplicationContext(), String.valueOf(boundService.randomGenerator()), Toast.LENGTH_SHORT).show();
             }
-        };
 
-        Handler handler = new Handler();
-        handler.postDelayed(runnable, 2000);
+            @Override
+            public void onFailure() {
+                Log.d("AAAAA","Failure");
+                Toast.makeText(getApplicationContext(), "Couldn't fetch a value", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        //Bounded Service
+
+//
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+
+                    if(isBound){
+                    Toast.makeText(MainActivity.this, String.valueOf(boundService.randomGenerator()), Toast.LENGTH_SHORT).show();
+                    Log.d("AAAA", "Generated Number: " + boundService.randomGenerator());
+                }
+                }
+            };
+
+            Handler handler = new Handler();
+            handler.postDelayed(runnable,1000);
+
 
         //Normal service
         LocalBroadcastManager.getInstance(this).registerReceiver(messageservice, new IntentFilter("Location Updates"));
@@ -350,8 +375,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(
-                messageservice);
+
 
         super.onPause();
 
@@ -360,11 +384,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(
+                messageservice);
         super.onStop();
         if(isBound){
             unbindService(boundServiceConnection);
-            isBound = false;
-
+//            isBound = false;
+//            Toast.makeText(context, isBound + "", Toast.LENGTH_SHORT).show();
+            Log.d("AAAA", isBound + "");
 
         }
 
@@ -380,18 +407,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             BoundService.MyBinder binderBridge = (BoundService.MyBinder) iBinder;
             boundService = binderBridge.getService();
             isBound = true;
+            Log.d("AAAA", "Connected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             isBound = false;
             boundService = null;
+            Log.d("AAAA", "Not Connected");
         }
     };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d("AAAA", isBound + "");
 
     }
 

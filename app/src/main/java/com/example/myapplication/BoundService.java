@@ -19,8 +19,15 @@ public class BoundService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("AAAA", "oncreate");
+        Log.d("AAAA", "oncreateee");
         super.onCreate();
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d("AAAA", "onbind");
+        return localBinder;
     }
 
     public class MyBinder extends Binder{
@@ -62,10 +69,5 @@ public class BoundService extends Service {
         stopSelf();
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.d("AAAA", "onbind");
-        return localBinder;
-    }
+
 }
