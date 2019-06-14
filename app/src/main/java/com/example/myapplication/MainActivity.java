@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.ListActivity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -62,6 +64,8 @@ import static android.location.LocationManager.GPS_PROVIDER;
 import android.location.LocationListener;
 import android.widget.Toast;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     public LocationManager locationManager;
     public TextView latlon, gf, vv;
@@ -78,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private BoundService boundService;
     private boolean isBound = false;
     private GPSprovider gpss = new GPSprovider();
-    private SuccessListener successListener = new SuccessListener();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -169,14 +173,37 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
 
         Intent intentt = new Intent(this, BoundService.class);
-        startService(intentt);
-        bindService(intentt,  boundServiceConnection, BIND_AUTO_CREATE);
+startService(intentt);
 
+            bindService(intentt,  boundServiceConnection, 0);
+
+
+//        Log.d("AAAAA","Component name " + name.getClassName());
+//        Log.d("AAAAA"," Bind Result = " + result);
 
 
         startService(new Intent(MainActivity.this, GPSprovider.class));
 
     }
+
+//    private boolean isMyServiceRunning(Class<?> serviceClass) {
+//        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+//        List<ActivityManager.AppTask> tasks = manager.getAppTasks();
+//        for (ActivityManager.AppTask task : tasks) {
+//            if (serviceClass.getName().equals(task.getTaskInfo().baseActivity))
+//                return true;
+//        }
+//        return false;
+//    }
+
+//
+//        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+//            if (serviceClass.getName().equals(service.service.getClassName())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
     public void getData(){
         Cursor res = dbase.getData();
         if(res.getCount() == 0)
@@ -209,24 +236,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onResume() {
-        successListener.setListenerr(new SuccessListener.onSuccessListenerr() {
-            @Override
-            public void onSuccess() {
-                Log.d("AAAAA","Success");
-                Toast.makeText(getApplicationContext(), String.valueOf(boundService.randomGenerator()), Toast.LENGTH_SHORT).show();
-            }
+        Log.d("AAAAA","Listener:");
 
-            @Override
-            public void onFailure() {
-                Log.d("AAAAA","Failure");
-                Toast.makeText(getApplicationContext(), "Couldn't fetch a value", Toast.LENGTH_SHORT).show();
-            }
-        });
 
 
         //Bounded Service
 
 //
+
+
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
@@ -234,13 +252,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                     if(isBound){
                     Toast.makeText(MainActivity.this, String.valueOf(boundService.randomGenerator()), Toast.LENGTH_SHORT).show();
                     Log.d("AAAA", "Generated Number: " + boundService.randomGenerator());
+
+
+                        boundService.setListenerr(new BoundService.onSuccessListenerr() {
+                            @Override
+                            public void onSuccess(int x) {
+                                Log.d("AAAAAA", "Successsssss");
+                            }
+
+                            @Override
+                            public void onFailure(String error) {
+                                Log.d("AAAAAA", "FAIL");
+                            }
+                        });
+
                 }
                 }
             };
 
-            Handler handler = new Handler();
-            handler.postDelayed(runnable,1000);
-
+                Handler handler = new Handler();
+                handler.postDelayed(runnable, 1000);
+//            handler.post(runnable);
 
         //Normal service
         LocalBroadcastManager.getInstance(this).registerReceiver(messageservice, new IntentFilter("Location Updates"));
@@ -375,12 +407,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     protected void onPause() {
-
-
         super.onPause();
-
-
     }
+
+
+    public void unbindButton(View view){
+        unbindService(boundServiceConnection);
+    }
+
+
 
     @Override
     protected void onStop() {
@@ -388,8 +423,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
                 messageservice);
         super.onStop();
         if(isBound){
+            boundService.setListenerr(null);
             unbindService(boundServiceConnection);
-//            isBound = false;
+
+            //isBound = false;
 //            Toast.makeText(context, isBound + "", Toast.LENGTH_SHORT).show();
             Log.d("AAAA", isBound + "");
 

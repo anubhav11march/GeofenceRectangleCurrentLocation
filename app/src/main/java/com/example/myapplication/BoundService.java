@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -21,6 +22,13 @@ public class BoundService extends Service {
     public void onCreate() {
         Log.d("AAAA", "oncreateee");
         super.onCreate();
+    }
+
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("AAAA", "startcommand");
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Nullable
@@ -70,4 +78,67 @@ public class BoundService extends Service {
     }
 
 
-}
+
+        public void SuccessListener( ){
+            this.listenerr  = null;
+            getResponse();
+        }
+
+        public void setListenerr(onSuccessListenerr listenerr){
+            this.listenerr = listenerr;
+            getResponse();
+        }
+        private  onSuccessListenerr listenerr = null;
+
+        public interface onSuccessListenerr{
+            public void onSuccess(int x);
+            public void onFailure(String error);
+
+        }
+
+        int y=0;
+        public onSuccessListenerr getListenerr() {
+            return listenerr;
+        }
+        public void getResponse(){
+
+//            Runnable runnable = new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//
+//
+//                        listenerr.onSuccess(randomGenerator());
+//                    }
+//                    catch (Exception e){
+//                        listenerr.onFailure(String.valueOf(e));
+//                    }
+//
+//                }
+//            };
+
+            Handler handler = new Handler();
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+
+                        listenerr.onSuccess(randomGenerator());
+                    }
+                    catch (Exception e){
+                        listenerr.onFailure(String.valueOf(e));
+                    }
+
+                }
+            }, 3000);
+
+
+        }
+
+    }
+
+
+
+
